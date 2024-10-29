@@ -132,6 +132,7 @@ class FED3 {
         void StartScreen();
         void FED3MenuScreen();
         void SetClock();
+	void UncertaintyMenu();
         
         //BNC input/output
 		void ReadBNC(bool blinkGreen);
@@ -210,6 +211,7 @@ class FED3 {
 
 	// Uncertainty variables
 	int TaskDelay = 15; // 15 sec by default
+	int Uncertainty = 0;
 
         // Bandit variables
         int prob_left = 0;

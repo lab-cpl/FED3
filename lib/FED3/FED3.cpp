@@ -423,11 +423,12 @@ void FED3::Timeout(int seconds, bool reset, bool whitenoise) {
           int freq = random(50, 250);
           tone(BUZZER, freq, 10);
         }
+	leftInterval = (millis() - leftPokeTime);
+	UpdateDisplay();
+	Event = "LeftinTimeOut";
+	logdata();
       }
 
-      leftInterval = (millis() - leftPokeTime);
-      Event = "LeftinTimeOut";
-      logdata();
     }
 
     if (digitalRead(RIGHT_POKE) == LOW) {        //If right poke is triggered
@@ -439,13 +440,13 @@ void FED3::Timeout(int seconds, bool reset, bool whitenoise) {
       }
       rightPokeTime = millis();
       rightInterval = 0.0;
-      while (digitalRead (LEFT_POKE) == LOW) {
+      while (digitalRead (RIGHT_POKE) == LOW) {
         if (whitenoise) {
           int freq = random(50, 250);
           tone(BUZZER, freq, 10);
         }
         rightInterval = (millis() - rightPokeTime);
-        //UpdateDisplay();
+	UpdateDisplay();
         Event = "RightinTimeout";
 
         logdata();
@@ -1220,11 +1221,11 @@ void FED3::logdata() {
   }
 
   else if ((Event == "Left") or (Event == "LeftShort") or (Event == "LeftWithPellet") or (Event == "LeftinTimeout") or (Event == "LeftDuringDispense")) {  // 
-    logfile.println(leftInterval/1000.000); // print left poke timing
+    logfile.println(leftInterval); // print left poke timing
   }
 
   else if ((Event == "Right") or (Event == "RightShort") or (Event == "RightWithPellet") or (Event == "RightinTimeout") or (Event == "RightDuringDispense")) {  // 
-    logfile.println(rightInterval/1000.000); // print left poke timing
+    logfile.println(rightInterval); // print left poke timing
   }
   
   else {
@@ -1695,18 +1696,15 @@ void FED3::SelectMode() {
 
   //In classic mode we pre-specify these programs names
   if (ClassicFED3==true){
-    if (FEDmode == 0) display.print("Free feeding");
-    if (FEDmode == 1) display.print("FR1");
-    if (FEDmode == 2) display.print("FR3");
-    if (FEDmode == 3) display.print("FR5");
-    if (FEDmode == 4) display.print("Progressive Ratio");
-    if (FEDmode == 5) display.print("Extinction");
-    if (FEDmode == 6) display.print("Light tracking");
-    if (FEDmode == 7) display.print("FR1 (Reversed)");
-    if (FEDmode == 8) display.print("Prog Ratio (Rev)");
-    if (FEDmode == 9) display.print("Self-Stim");
-    if (FEDmode == 10) display.print("Self-Stim (Rev)");
-    if (FEDmode == 11) display.print("Timed feeding");
+    if (FEDmode == 0){
+      display.print("Baseline");
+    } 
+    if (FEDmode == 1){
+      display.print("No-Uncertainty");
+    }
+    if (FEDmode == 2){
+      display.print("Uncertainty");
+    }
     display.refresh();
   }
   
@@ -1715,15 +1713,6 @@ void FED3::SelectMode() {
     if (FEDmode == 0) display.print("Mode 1");
     if (FEDmode == 1) display.print("Mode 2");
     if (FEDmode == 2) display.print("Mode 3");
-    if (FEDmode == 3) display.print("Mode 4");
-    if (FEDmode == 4) display.print("Mode 5");
-    if (FEDmode == 5) display.print("Mode 6");
-    if (FEDmode == 6) display.print("Mode 7");
-    if (FEDmode == 7) display.print("Mode 8");
-    if (FEDmode == 8) display.print("Mode 9");
-    if (FEDmode == 9) display.print("Mode 10");
-    if (FEDmode == 10) display.print("Mode 11");
-    if (FEDmode == 11) display.print("Mode 12");
     display.refresh();
   }
   
@@ -1739,42 +1728,21 @@ void FED3::SelectMode() {
   NVIC_SystemReset();      // processor software reset
 }
 
+
 /******************************************************************************************************************************************************
                                                                                            Classic FED3 functions
 ******************************************************************************************************************************************************/
 
 //  Classic menu display
 void FED3::ClassicMenu () {
-  //  0 Free feeding
-  //  1 FR1
-  //  2 FR3
-  //  3 FR5
-  //  4 Progressive Ratio
-  //  5 Extinction
-  //  6 Light tracking FR1 task
-  //  7 FR1 (reversed)
-  //  8 PR (reversed)
-  //  9 self-stim
-  //  10 self-stim (reversed)
-  //  11 time feeding
+  //  0 Baseline
+  //  1 No-Uncertainty
+  //  2 Uncertainty
 
   // Set FR based on FEDmode
-  if (FEDmode == 0) FR = 0;  // free feeding
+  if (FEDmode == 0) FR = 1;  // free feeding
   if (FEDmode == 1) FR = 1;  // FR1 spatial tracking task
-  if (FEDmode == 2) FR = 3;  // FR3
-  if (FEDmode == 3) FR = 5; // FR5
-  if (FEDmode == 4) FR = 99;  // Progressive Ratio
-  if (FEDmode == 5) { // Extinction
-    FR = 1;
-    ReleaseMotor ();
-    digitalWrite (MOTOR_ENABLE, LOW);  //disable motor driver and neopixels
-    delay(2); //let things settle
-  }
-  if (FEDmode == 6) FR = 1;  // Light tracking
-  if (FEDmode == 7) FR = 1; // FR1 (reversed)
-  if (FEDmode == 8) FR = 1; // PR (reversed)
-  if (FEDmode == 9) FR = 1; // self-stim
-  if (FEDmode == 10) FR = 1; // self-stim (reversed)
+  if (FEDmode == 2) FR = 1;  // FR3
 
   display.clearDisplay();
   display.setCursor(1, 135);
@@ -1786,18 +1754,9 @@ void FED3::ClassicMenu () {
   
   display.setCursor(10, 60);
   //Text to display selected FR ratio
-  if (FEDmode == 0) display.print("Free feeding");
-  if (FEDmode == 1) display.print("FR1");
-  if (FEDmode == 2) display.print("FR3");
-  if (FEDmode == 3) display.print("FR5");
-  if (FEDmode == 4) display.print("Progressive Ratio");
-  if (FEDmode == 5) display.print("Extinction");
-  if (FEDmode == 6) display.print("Light tracking");
-  if (FEDmode == 7) display.print("FR1 (Reversed)");
-  if (FEDmode == 8) display.print("Prog Ratio (Rev)");
-  if (FEDmode == 9) display.print("Self-Stim");
-  if (FEDmode == 10) display.print("Self-Stim (Rev)");
-  if (FEDmode == 11) display.print("Timed feeding");
+  if (FEDmode == 0) display.print("Baseline");
+  if (FEDmode == 1) display.print("No-Uncertainty");
+  if (FEDmode == 2) display.print("Uncertainty");
   
   DisplayMouse();
   display.clearDisplay();
