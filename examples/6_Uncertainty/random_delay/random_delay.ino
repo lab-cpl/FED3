@@ -43,6 +43,7 @@ void setup() {
 
 void loop() {
   fed3.run();                                           //Call fed.run at least once per loop
+
   if (fed3.FEDmode == 2){
     // pick random delay
     int randomIndex = random(arraySize); // Generate a random index within the array size
@@ -55,12 +56,14 @@ void loop() {
   if (fed3.Left) {                                      //If left poke is triggered
     fed3.logLeftPoke(); 
     fed3.Timeout(fed3.TaskDelay);
+    fed3.ConditionedStimulus(1000);
     fed3.Feed();
   }
 
   if (fed3.Right) {                                     //If right poke is triggered
     fed3.logRightPoke();                                //Log right poke
     fed3.Timeout(fed3.TaskDelay);
+    fed3.ConditionedStimulus(1000);
     fed3.Feed();
   }
 }

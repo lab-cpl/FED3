@@ -195,6 +195,7 @@ class FED3 {
         int PelletCount = 0;
         int BlockPelletCount = 0;
         int timeout = 0;
+	int failedRetrieval = 0;
     
         bool countAllPokes = true;
         
@@ -223,8 +224,10 @@ class FED3 {
         int retInterval = 0;
         int leftInterval = 0;
         int rightInterval = 0;
+	int failedRetrievalInterval = 0;
         int leftPokeTime = 0.0;
         int rightPokeTime = 0.0;
+	int failedRetrievalTime = 0.0;
         unsigned long pelletTime = 0;
         unsigned long lastPellet = 0;
         unsigned long unixtime = 0;

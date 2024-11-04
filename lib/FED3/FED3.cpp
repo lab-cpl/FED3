@@ -159,7 +159,6 @@ void FED3::Feed(int pulse, bool pixelsoff) {
     if (pelletDispensed == true) {   
       ReleaseMotor ();
       pelletTime = millis();
-      pixelsOn(1, 0, 0, 0);
       
       display.fillCircle(25, 99, 5, BLACK);
       display.refresh();
@@ -174,7 +173,8 @@ void FED3::Feed(int pulse, bool pixelsoff) {
           leftPokeTime = millis();
           if (countAllPokes) LeftCount ++;
           leftInterval = 0.0;
-          while (digitalRead (LEFT_POKE) == LOW) {}  //Hang here until poke is clear
+          while (digitalRead (LEFT_POKE) == LOW) {
+	  }  //Hang here until poke is clear
           leftInterval = (millis()-leftPokeTime);
           UpdateDisplay();
           Event = "LeftWithPellet";
@@ -271,7 +271,7 @@ void FED3::Feed(int pulse, bool pixelsoff) {
         }
     }
   } while (PelletAvailable == false);
-}
+  }
 
 //minor movement to clear jam
 bool FED3::MinorJam(){
@@ -408,6 +408,19 @@ void FED3::Timeout(int seconds, bool reset, bool whitenoise) {
       delay (10);
     }
 
+    // if there's an attempt to retrieve a pellet with none present
+    if (digitalRead(PELLET_WELL) == LOW) {
+      failedRetrievalTime = millis();
+      failedRetrieval ++;
+      failedRetrievalInterval = 0.0;
+      while (digitalRead(PELLET_WELL) == LOW) {
+	failedRetrievalInterval = (millis() - failedRetrievalTime);
+	UpdateDisplay();
+	Event = "RewardPortinTimeOut";
+	logdata();
+      }
+    }
+
     if (digitalRead(LEFT_POKE) == LOW) {             //If left poke is triggered
       if (reset) {
         timeoutStart = millis();
@@ -464,8 +477,8 @@ void FED3::Timeout(int seconds, bool reset, bool whitenoise) {
                                                                                        Audio and neopixel stimuli
 **************************************************************************************************************************************************/
 void FED3::ConditionedStimulus(int duration) {
-  tone (BUZZER, 4000, duration);
-  pixelsOn(0,0,10,0);  //blue light for all
+//  tone (BUZZER, 4000, duration);
+  pixelsOn(1,0,0,0);  //blue light for all
 }
 
 void FED3::Click() {
@@ -1005,7 +1018,7 @@ void FED3::writeHeader() {
 
   else if (sessiontype != "Bandit") {
     if (tempSensor == false){
-      logfile.println("MM:DD:YYYY hh:mm:ss,Library_Version,Session_type,Device_Number,Battery_Voltage,Motor_Turns,FR,Event,Active_Poke,Left_Poke_Count,Right_Poke_Count,Pellet_Count,Block_Pellet_Count,Retrieval_Time,InterPelletInterval,Poke_Time");
+      logfile.println("MM:DD:YYYY hh:mm:ss,Library_Version,Session_type,Device_Number,Battery_Voltage,Motor_Turns,FR,Event,Active_Poke,Left_Poke_Count,Right_Poke_Count,Failed_Retrieval_Count,Pellet_Count,Block_Pellet_Count,Retrieval_Time,InterPelletInterval,Poke_Time");
     }
     if (tempSensor == true){
       logfile.println("MM:DD:YYYY hh:mm:ss,Temp,Humidity,Library_Version,Session_type,Device_Number,Battery_Voltage,Motor_Turns,FR,Event,Active_Poke,Left_Poke_Count,Right_Poke_Count,Pellet_Count,Block_Pellet_Count,Retrieval_Time,InterPelletInterval,Poke_Time");
@@ -1164,6 +1177,7 @@ void FED3::logdata() {
   else {
     if (activePoke == 0)  logfile.print("Right"); //
     if (activePoke == 1)  logfile.print("Left"); //
+    if (activePoke == 2)  logfile.print("LeftANDRight");
   }
 
   logfile.print(",");
@@ -1176,6 +1190,9 @@ void FED3::logdata() {
   logfile.print(",");
     
   logfile.print(RightCount); // Print Right poke count
+  logfile.print(",");
+
+  logfile.print(failedRetrieval); // Print # failed retrieval
   logfile.print(",");
 
   logfile.print(PelletCount); // print Pellet counts
@@ -1226,6 +1243,10 @@ void FED3::logdata() {
 
   else if ((Event == "Right") or (Event == "RightShort") or (Event == "RightWithPellet") or (Event == "RightinTimeout") or (Event == "RightDuringDispense")) {  // 
     logfile.println(rightInterval); // print left poke timing
+  }
+
+  else if ((Event == "RewardPortinTimeOut")) {
+    logfile.println(failedRetrievalInterval);
   }
   
   else {
