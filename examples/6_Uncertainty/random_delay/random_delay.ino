@@ -25,20 +25,20 @@ int Uncertainty = 0;
 void setup() {
   // open menu
   fed3.ClassicFED3 = true;
-  // set session type
-  if (fed3.FEDmode == 0) {
-    fed3.sessiontype = "Baseline";
-  }
-  if (fed3.FEDmode == 1) {
-    fed3.sessiontype = "No-Uncertainty";
-  }
-  if (fed3.FEDmode == 2) {
-    fed3.sessiontype = "Uncertainty";
-  }
   //fed3.FED3Menu = true;
   fed3.begin();                                         //Setup the FED3 hardware
   fed3.DisplayPokes = 1;
   fed3.activePoke = 2; // both nosepokes active
+  // set session type
+  if (fed3.FEDmode == 0) {
+    fed3.sessiontype = "baseline";
+  }
+  if (fed3.FEDmode == 1) {
+    fed3.sessiontype = "certainty";
+  }
+  if (fed3.FEDmode == 2) {
+    fed3.sessiontype = "uncertainty";
+  }
 }
 
 void loop() {
@@ -51,7 +51,7 @@ void loop() {
     fed3.TaskDelay = randomNumber;
   }
   if (fed3.FEDmode == 0 | fed3.FEDmode == 1){
-    fed3.TaskDelay = 15; // this is already defined in header files, thus not necesary, only here to be super explicit
+    fed3.TaskDelay = 1; // this is already defined in header files, thus not necesary, only here to be super explicit
   }
   if (fed3.Left) {                                      //If left poke is triggered
     fed3.logLeftPoke(); 

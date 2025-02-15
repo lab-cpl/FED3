@@ -65,7 +65,7 @@ void colorWipe(uint32_t c, uint8_t wait) {
   }
 }
 
-void setup () {
+void setup() {
   Serial.begin(57600);  //open serial monitor so you can see time output on computer via USB
 
   /********************************************************
@@ -105,7 +105,7 @@ void setup () {
   display.refresh();
 }
 
-void loop () {
+void loop() {
   digitalWrite(ENABLE_RGB, LOW);
   DateTime now = rtc.now();
 

@@ -211,7 +211,7 @@ class FED3 {
         String Event = "None";   //What kind of event just happened?
 
 	// Uncertainty variables
-	int TaskDelay = 15; // 15 sec by default
+	int TaskDelay = 1; // 15 sec by default
 	int Uncertainty = 0;
 
         // Bandit variables
