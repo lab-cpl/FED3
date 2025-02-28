@@ -82,21 +82,28 @@ void setup() {
     Serial.println("Couldn't find RTC");  //This will trigger if RTC cannot be found
     while (1);
   }
-
-  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  else {
+    // following line sets the RTC to the date & time this sketch was compiled
+    //rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  }
 
   /********************************************************
     The below line sets the RTC with an explicit date & time, for example to set
     January 21, 2014 at 3am you would call:
    ********************************************************/
-  //rtc.adjust(DateTime(2018, 8, 24, 11, 20, 0));
+  rtc.adjust(DateTime(2025, 2, 13, 39, 0, 0));
+  DateTime now = rtc.now();
+  DateTime compiled = DateTime(__DATE__, __TIME__);
+  if (now.unixtime() < compiled.unixtime()) {
+  Serial.println("RTC is older than compile time! Updating");
+  // following line sets the RTC to the date & time this sketch was compiled
+  rtc.adjust(DateTime(__DATE__, __TIME__));}
 
 
   /********************************************************
      Start, clear, and setup the display
    ********************************************************/
-  display.begin();
-  minorHalfSize = min(display.width(), display.height()) / 2;
+  display.begin(); minorHalfSize = min(display.width(), display.height()) / 2;
   display.setRotation(3);
   display.setTextColor(BLACK);
   display.setFont(&FreeSans9pt7b);

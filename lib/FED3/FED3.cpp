@@ -164,7 +164,7 @@ void FED3::Feed(int pulse, bool pixelsoff) {
       display.refresh();
       retInterval = (millis() - pelletTime);
       //while pellet is present and under 60s has elapsed
-      while (digitalRead (PELLET_WELL) == LOW and retInterval < 60000) {  //After pellet is detected, hang here for up to 1 minute to detect when it is removed
+      while (digitalRead (PELLET_WELL) == LOW and retInterval < 3600000) {  //After pellet is detected, hang here for up to 1 hour to detect when it is removed
         retInterval = (millis() - pelletTime);
         DisplayRetrievalInt();
        
@@ -195,7 +195,7 @@ void FED3::Feed(int pulse, bool pixelsoff) {
           }
         } 
       
-      //after 60s has elapsed
+      //after 1h has elapsed
       while (digitalRead (PELLET_WELL) == LOW) { //if pellet is not taken after 60 seconds, wait here and go to sleep
         run();
         //Log pokes while pellet is present 
@@ -1018,7 +1018,7 @@ void FED3::writeHeader() {
 
   else if (sessiontype != "Bandit") {
     if (tempSensor == false){
-      logfile.println("MM:DD:YYYY hh:mm:ss,Library_Version,Session_type,Device_Number,Battery_Voltage,Motor_Turns,FR,Event,Active_Poke,Left_Poke_Count,Right_Poke_Count,Failed_Retrieval_Count,Pellet_Count,Block_Pellet_Count,Retrieval_Time,InterPelletInterval,Poke_Time");
+      logfile.println("MM:DD:YYYY hh:mm:ss,Library_Version,Session_type,Device_Number,Battery_Voltage,Motor_Turns,FR,Event,Active_Poke,Left_Poke_Count,Right_Poke_Count,Failed_Retrieval_Count,Pellet_Count,Block_Pellet_Count,Retrieval_Time,InterPelletInterval,Poke_Time,Delay");
     }
     if (tempSensor == true){
       logfile.println("MM:DD:YYYY hh:mm:ss,Temp,Humidity,Library_Version,Session_type,Device_Number,Battery_Voltage,Motor_Turns,FR,Event,Active_Poke,Left_Poke_Count,Right_Poke_Count,Pellet_Count,Block_Pellet_Count,Retrieval_Time,InterPelletInterval,Poke_Time");
@@ -1207,11 +1207,11 @@ void FED3::logdata() {
   if (Event != "Pellet"){
     logfile.print(sqrt (-1)); // print NaN if it's not a pellet Event
   }
-  else if (retInterval < 60000 ) {  // only log retrieval intervals below 1 minute (FED should not record any longer than this)
+  else if (retInterval < 3600000 ) {  // only log retrieval intervals below 1 hour (FED should not record any longer than this)
     logfile.print(retInterval/1000.000); // print interval between pellet dispensing and being taken
   }
-  else if (retInterval >= 60000) {
-    logfile.print("Timed_out"); // print "Timed_out" if retreival interval is >60s
+  else if (retInterval >= 3600000) {
+    logfile.print("Timed_out"); // print "Timed_out" if retreival interval is >1h
   }
   else {
     logfile.print("Error"); // print error if value is < 0 (this shouldn't ever happen)
@@ -1234,23 +1234,34 @@ void FED3::logdata() {
   // Poke duration
   /////////////////////////////////
   if (Event == "Pellet"){
-    logfile.println(sqrt (-1)); // print NaN 
+    logfile.print(sqrt (-1)); // print NaN 
   }
 
   else if ((Event == "Left") or (Event == "LeftShort") or (Event == "LeftWithPellet") or (Event == "LeftinTimeout") or (Event == "LeftDuringDispense")) {  // 
-    logfile.println(leftInterval); // print left poke timing
+    logfile.print(leftInterval); // print left poke timing
   }
 
   else if ((Event == "Right") or (Event == "RightShort") or (Event == "RightWithPellet") or (Event == "RightinTimeout") or (Event == "RightDuringDispense")) {  // 
-    logfile.println(rightInterval); // print left poke timing
+    logfile.print(rightInterval); // print left poke timing
   }
 
   else if ((Event == "RewardPortinTimeOut")) {
-    logfile.println(failedRetrievalInterval);
+    logfile.print(failedRetrievalInterval);
   }
   
   else {
-    logfile.println(sqrt (-1)); // print NaN 
+    logfile.print(sqrt (-1)); // print NaN 
+  }
+  logfile.print(",");
+
+  /////////////////////////////////
+  // Delivery Delay
+  /////////////////////////////////
+  if (Event == "Pellet"){
+    logfile.println(TaskDelay);
+  }
+  else {
+    logfile.println(sqrt (-1));
   }
 
   /////////////////////////////////
